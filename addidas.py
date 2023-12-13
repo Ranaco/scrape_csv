@@ -1,67 +1,73 @@
-from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
-import warnings
-warnings.filterwarnings('ignore')
+from bs4 import BeautifulSoup
+import pandas as pd
+import time
 
 
-def scrape_addidas_shoes(url, category):
+def get_shoe_data():
+
+    # Creates Chrome WebDriver instance.
     driver = webdriver.Chrome()
+
+    # Let's maximize the automated chrome window
     driver.maximize_window()
 
-    driver.get(url)
+    # Navigate to shine website
+    driver.get("https://www.adidas.co.in/men%7Cunisex%7Cwomen-shoes")
 
-    # Wait for the initial items to load
-    WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located(
-        (By.CLASS_NAME, "with-variation-carousel")))
+    # Wait for the page to load
+    time.sleep(3)
 
-    # # Scroll down to trigger loading more items
-    # for _ in range(3):  # Adjust the number of scrolls based on your needs
-    #     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-    #     time.sleep(2)  # Allow time for the items to load
+    # Imports the HTML of the webpage into python
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-    source = driver.page_source
+    shoe_links = []
 
-    soup = BeautifulSoup(source, "html.parser")
+    while True:
+        # Grabs the HTML of each product
+        product_card = soup.find_all(
+            'div', class_='glass-product-card color-variations__fixed-size plp-product-card___2Tf-5 product-card-content___3R3aL lift-image___3FzoX')
 
-    items = soup.find_all("div", {
-                          "class": "glass-product-card color-variations__fixed-size plp-product-card___2Tf-5 product-card-content___3R3aL lift-image___3FzoX"})
-
-    for item in items:
-        # Your existing code to extract details
-        title_div = item.find(
-            "p", {"class": "glass-product-card__title"})
-        price_div = None
-        color_div = None
-
-        try:
-            price_div = item.find(
-                "div", {"class": "gl-price-item gl-price-item--sale notranslate"})
-        except NoSuchElementException:
-            pass
-
-        if not price_div:
+        # Grabs the product details for every product on the page and adds each product as a row in our dataframe
+        for product in product_card:
             try:
-                price_div = item.find(
-                    "div", {"class": "gl-price-item notranslate"})
+                link = "https://adidas.co.in" + product.find(
+                    'a', class_='glass-product-card__assets-link').get('href')
+                # shoe_links.append('https://www.adidas.co.in' + link)
+                driver.get(link)
+                shoe_soup = BeautifulSoup(driver.page_source, 'html.parser')
+                title_div = shoe_soup.find("h1", {"class": "name___120FN"})
 
-            except NoSuchElementException:
-                pass
+            except Exception as e:
+                # print(f"Error processing product {idx}: {e}")
+                print("Some error fetching shoe link", e)
 
-        try:
-            color_div = item.find("span", {"class": "dark-grey___6ysQv"})
-        except NoSuchElementException:
-            pass
+        # Check for the presence of the next page lin print("Some error fetching shoe link")k
+        next_page = soup.find('a', {'data-auto-id': 'plp-pagination-next'})
+        if not next_page:
+            break
 
-        title = title_div.text
-        price = price_div.text if price_div else None
-        color = color_div.text if color_div else "NA"
-        print(title, price, color, category, "\n")
+    # Navigate to the next page
+        next_page_full = 'https://www.adidas.co.in' + next_page.get('href')
+        driver.get(next_page_full)
+    # time.sleep(1)  # Add a delay to ensure the page loads
 
-    driver.quit()
+    # Imports the HTML of the webpage into python
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    # # Create a DataFrame
+    # df = pd.DataFrame(shoe_links)
+    #
+    # # Save DataFrame to CSV
+    # df.to_csv("adidas_links_data_part_1.csv", index=False)
 
 
-scrape_addidas_shoes("https://www.adidas.co.in/men-shoes", "men")
+get_shoe_data()
+
+# # Create a DataFrame
+# df = pd.DataFrame(shoe_links)
+#
+# # Save DataFrame to CSV
+# df.to_csv("adidas_links_data_part_1.csv", index=False)
+
+# Close the Chrome WebDriver
