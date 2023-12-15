@@ -50,13 +50,13 @@ def get_shoe():
                 By.CSS_SELECTOR,
                 ".relative.border.flex.items-center.justify-center.flex-none.rounded-sm.cursor-pointer"
             )))
-        style_code_parent_div = wait.until(EC.presence_of_element_located(
+        product_code_parent_div = wait.until(EC.presence_of_element_located(
             (
                 By.CSS_SELECTOR,
                 ".tw-1h4nwdw.tw-p9uz4a.tw-xwzea6.list-disc.list-inside"
             )))
 
-        style_code_div = style_code_parent_div.find_element(
+        product_code_div = product_code_parent_div.find_element(
             By.TAG_NAME, "li"
         )
         category = "Men" if "Men" in title_h1.text else "Women" if "Women" in title_h1.text else "Unisex"
@@ -64,9 +64,8 @@ def get_shoe():
         shoe_info['title'] = title_h1.text
         shoe_info['org_price'] = org_price_div.text
         shoe_info['discounted_price'] = discounted_price_div.text
-        shoe_info['color'] = [color.text for color in color_div_list]
         shoe_info['size'] = [size.text for size in size_div_list]
-        shoe_info['style_code'] = style_code_div.text.replace(
+        shoe_info['product_code'] = product_code_div.text.replace(
             "Style:", "").strip()
         shoe_info['category'] = category
 
