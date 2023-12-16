@@ -34,42 +34,67 @@ def scrape(url, driver):
 
     comfort = ""
     fit = ""
+    review_count = 0
     try:
-        review_button = WebDriverWait(driver, 2).until(EC.presence_of_element_located((
-            By.CSS_SELECTOR, "summary.css-rptnlm"
-        )))
+        review_count_div = wait.until(EC.presence_of_all_elements_located((
+            By.CLASS_NAME, "css-rptnlm"
+        )))[0]
 
-        review_button.click()
+        review_count = re.findall(
+            "\d+", review_count_div.find_element(By.TAG_NAME, "h3").text)[0]
 
-        more_review_button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((
-            By.CSS_SELECTOR, "button[data-test=more-reviews]"
-        )))
+        more_review_button = None
+        review_button = None
 
-        driver.execute_script(
-            "arguments[0].scrollIntoView(true);", more_review_button)
+        try:
+            review_button = WebDriverWait(driver, 2).until(EC.presence_of_element_located((
+                By.CSS_SELECTOR, "summary.css-rptnlm"
+            )))
 
-        more_review_button.click()
+            review_button.click()
 
-        # Add a small delay
-        time.sleep(1)
+            more_review_button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((
+                By.CSS_SELECTOR, "button[data-test=more-reviews]"
+            )))
 
-        slider_divs = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((
-            By.CLASS_NAME, "tt-u-clip-hide"
-        )))
-        comfort_div = slider_divs[1]
-        comfort = re.findall(
-            "\d+", comfort_div.text)[0] if comfort_div is not None else "None"
-        fit_div = slider_divs[0]
-        fit = re.findall(
-            "\d+", fit_div.text)[0] if fit_div is not None else "None"
-        close_button = WebDriverWait(driver, 1).until(EC.presence_of_element_located((
-            By.CSS_SELECTOR,
-            ".css-7vvfsw.css-1v3caum.js-drawer-close.g72-x.bg-white.z10"
-        )))
-        close_button.click()
+            driver.execute_script(
+                "arguments[0].scrollIntoView(true);", more_review_button)
+        except TimeoutException or NoSuchElementException:
+            print("More button not found")
+            pass
+
+        if more_review_button is not None:
+            try:
+                more_review_button.click()
+
+                time.sleep(1)
+
+                slider_divs = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((
+                    By.CLASS_NAME, "tt-u-clip-hide"
+                )))
+                comfort_div = slider_divs[1]
+                comfort = re.findall(
+                    "\d+", comfort_div.text)[0] if comfort_div is not None else "None"
+                fit_div = slider_divs[0]
+                fit = re.findall(
+                    "\d+", fit_div.text)[0] if fit_div is not None else "None"
+                close_button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((
+                    By.CSS_SELECTOR,
+                    ".css-7vvfsw.css-1v3caum.js-drawer-close.g72-x.bg-white.z10"
+                )))
+                close_button.click()
+
+            except Exception:
+                close_button = WebDriverWait(driver, 1).until(EC.presence_of_element_located((
+                    By.CSS_SELECTOR,
+                    ".css-7vvfsw.css-1v3caum.js-drawer-close.g72-x.bg-white.z10"
+                )))
+                close_button.click()
+                comfort = "None"
+                fit = "None"
     except Exception:
-        comfort = "None"
-        fit = "None"
+        print("Review not found")
+        pass
 
     for color_div in color_div_list:
         if color_div_parent is not None:
@@ -133,17 +158,17 @@ def scrape(url, driver):
             print("Error")
             pass
 
-        review_parent_div = wait.until(EC.presence_of_element_located((
-            By.CSS_SELECTOR, ".css-rptnlm",
-        )))
+        star_div = None
+        try:
+            review_parent_div = wait.until(EC.presence_of_element_located((
+                By.CSS_SELECTOR, ".css-rptnlm",
+            )))
 
-        review_div = review_parent_div.find_element(
-            By.CLASS_NAME, "headline-4"
-        )
-
-        star_div = review_parent_div.find_element(
-            By.CLASS_NAME, "css-n209rx"
-        )  # attr = aria-label
+            star_div = review_parent_div.find_element(
+                By.CLASS_NAME, "css-n209rx"
+            )  # attr = aria-label
+        except Exception:
+            pass
 
         category_div = wait.until(EC.presence_of_all_elements_located((
             By.CSS_SELECTOR, ".headline-5.pb1-sm.d-sm-ib"
@@ -178,8 +203,9 @@ def scrape(url, driver):
             is not None else "None",
             "url": url,
             "category": category,
-            "review": re.findall(f"\d+", review_div.text)[0],
-            "star": str(star_div.get_attribute('aria-label')).strip(),
+            "review_count": review_count,
+            "star": str(star_div.get_attribute(
+                'aria-label')).strip() if star_div is not None else "NaN",
             "product_code": product_code_div.text.replace(
                 "Style: ", "").strip(),
             "shoe_type": shoe_type_div.text.replace(category +
@@ -192,7 +218,7 @@ def scrape(url, driver):
             "brand": "Nike",
             # "sizes": [size.text for size in size_div_list]
         }
-        for i, color in enumerate(colors):
+        for _, color in enumerate(colors):
             data_table.update(color)
 
         print(data_table)

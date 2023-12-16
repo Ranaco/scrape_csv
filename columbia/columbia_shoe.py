@@ -115,17 +115,20 @@ def get_columbia_shoe(url, driver):
 
         data_table = {
             "shoe_name": product_info['title'],
-            "category": product_info['category'],
             "original_price": product_info['org_price'],
             "discounted_price": product_info['dis_price'],
-            "color_count": len(color_list),
+            "url": url,
+            "category": product_info['category'],
             "review_count": product_info['review_count'],
-            "website": "Columbia Sportswear",
-            "star_count": product_info['star_count'],
-            "size_count": len(product_info['size']),
+            "star": product_info['star_count'],
             "product_code": product_info['product_code'],
+            "shoe_type": "NaN",
+            "durability": "NaN",
             "comfort": "NaN",
-            "durability": "NaN"
+            "size": "NaN",
+            "size_count": len(product_info['size']),
+            "color_count": len(color_list),
+            "brand": "columbia",
         }
         for i, color in enumerate(colors):
             data_table.update(color)

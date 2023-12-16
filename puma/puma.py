@@ -1,27 +1,44 @@
-from pandas.core.dtypes.dtypes import re
-from selenium import webdriver
-from bs4 import BeautifulSoup
 import pandas as pd
-import time
+from selenium import webdriver
+from pandas.errors import EmptyDataError
+from puma_shoe import get_shoe
 
-from selenium.webdriver.common.by import By
+# import all the links from puma-link
+df = pd.read_csv('./puma-link.csv')
 
+# get all links
+links = df['link']
 
-def get_puma_shoes():
-    driver = webdriver.Chrome()
-    driver.maximize_window()
-    url = "https://in.puma.com/in/en/mens/mens-shoes"
-
-    driver.get(url)
-
-    item_count_div = driver.find_element(
-        By.CSS_SELECTOR, ".uppercase.font-bold.text-lg.md\\:text-xl")
-    item_count = re.findall(r'\d+', item_count_div.text)
-    for i in range(int(item_count[0]) // 24):
-        time.sleep(1)
-        link_div_list = driver.find_elements(
-            By.CLASS_NAME, "relative w-full flex flex-col gap-2"
-        )
+options = webdriver.ChromeOptions()
+driver = webdriver.Chrome(options=options)
+driver.maximize_window()
 
 
-get_puma_shoes()
+def save_data_to_csv(data_list, csv_filename='output.csv'):
+    shoe_data = []
+    for data in data_list:
+        shoe_data.append(data)
+    shoe_df = pd.DataFrame(shoe_data)
+
+    try:
+        existing_csv = pd.read_csv(csv_filename)
+    except EmptyDataError:
+        existing_csv = pd.DataFrame()
+
+    # Save the DataFrame to a CSV file
+    df = pd.concat([existing_csv, shoe_df], ignore_index=True)
+    # Save the DataFrame to a CSV file
+    df.to_csv(csv_filename, index=False)
+
+    print(f"CSV file '{csv_filename}' saved successfully.")
+
+
+data_list = []
+
+for link in links:
+    print(link)
+    data_list_for_link = get_shoe(link, driver)
+    save_data_to_csv(data_list_for_link)
+
+
+driver.quit()
