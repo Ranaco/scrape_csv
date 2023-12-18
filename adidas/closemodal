@@ -1,0 +1,1 @@
+<button name="account-portal-close" type="button" class="gl-modal__close"><span data-testid="close" class="gl-icon__wrapper" role="img"><svg data-testid="close-svg" class="gl-icon"><use xlink:href="#close"></use><title></title></svg></span></button>

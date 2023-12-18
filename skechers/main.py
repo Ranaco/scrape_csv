@@ -1,24 +1,25 @@
 import pandas as pd
 from selenium import webdriver
 from pandas.errors import EmptyDataError
-from scrape_wood import get_data
+from scrape import get_data
 
-# import all the links from puma-link
-df = pd.read_csv('./woodland-link.csv')
+# import all the links from skechers-link
+df = pd.read_csv('./skechers-link.csv')
 
 # get all links
 links = df['link']
 
-driver = webdriver.Chrome()
-driver.maximize_window()
+options = webdriver.ChromeOptions()
+
+
+def setup_driver():
+    return webdriver.Chrome(options=options)
 
 
 def save_data_to_csv(data_list, csv_filename='output.csv'):
     shoe_data = []
     for data in data_list:
         shoe_data.append(data)
-        print(data)
-        print("\n")
     shoe_df = pd.DataFrame(shoe_data)
 
     try:
@@ -34,10 +35,16 @@ def save_data_to_csv(data_list, csv_filename='output.csv'):
     print(f"CSV file '{csv_filename}' saved successfully.")
 
 
+# Loop through links
 for link in links:
     print(link)
+
+    # Initialize a new WebDriver for each URL
+    driver = setup_driver()
+    driver.maximize_window()
+
     data_list_for_link = get_data(link, driver)
     save_data_to_csv(data_list_for_link)
 
-
-driver.quit()
+    # Quit the WebDriver after processing each URL
+    driver.quit()

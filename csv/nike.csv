@@ -1,4 +1,4 @@
-shoe_name,price,url,category,review_count,star,product_code,shoe_type,durability,comfort,size,size_count,color_count,brand,color 1,color 2,color 3,color 4,color 5
+shoe_name,original_price,url,category,review_count,star,product_code,shoe_type,durability,comfort,size,size_count,color_count,brand,color 1,color 2,color 3,color 4,color 5
 Nike Air Force 1 '07,7 495.00,https://www.nike.com/in/t/air-force-1-07-shoes-WrLlWX/CW2288-111,Men,1316,4.8,CW2288-111,Shoes,,80.0,54.0,20,2,Nike,White/White,Black/Black,,,
 Nike Air Force 1 '07,7 495.00,https://www.nike.com/in/t/air-force-1-07-shoes-WrLlWX/CW2288-111,Men,1316,4.8,CW2288-001,Shoes,,80.0,54.0,17,2,Nike,White/White,Black/Black,,,
 Nike Court Vision Low Next Nature,4 995.00,https://www.nike.com/in/t/court-vision-low-next-nature-shoes-N2fFHb/DH2987-101,Men,105,4.7,DH2987-110,Shoes,,84.0,67.0,0,7,Nike,White/Malachite/White/Black,White/White/Black,Wolf Grey/White/University Red,White/White/White,Black/Black/White
